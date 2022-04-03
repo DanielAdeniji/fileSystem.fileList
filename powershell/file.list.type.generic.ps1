@@ -2,8 +2,8 @@
     Declare variables
 #>
 [string] $folder ="";
-[object] $fileList =$null;
 [string] $log = "";
+[object] $fileList =$null;
 
 <#
     Get home directory
