@@ -12,4 +12,6 @@ git add %_folder%\file.list.type.use.ps1
 
 git add git*.cmd
 
+git add .gitignore
+
 endlocal
