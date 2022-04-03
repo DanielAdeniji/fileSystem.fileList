@@ -1,5 +1,7 @@
 setlocal
 
+git add .\README.md
+
 set "_folder=powershell"
 
 git add %_folder%\file.list.type.generic.ps1
