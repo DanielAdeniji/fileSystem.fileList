@@ -1,87 +1,163 @@
-param ( `
-              [Parameter(Mandatory)] [string] $folder  `
-            , [Parameter(Mandatory)] [string] $ext 
+#Run the script only in PowerShell 3 or greater:
+#Requires -Version 3
+
+
+<#
+
+    Support Parameters
+        a) Folder
+        b) Ext ( Extension )
+        
+#>
+[CmdletBinding()]
+Param (
+         [parameter (
+                      Mandatory=$false
+                    , position=0
+                    , HelpMessage="Folder"
+                   )
+          ]
+ 
+
+          [string] $folder     
+ 
+        , [parameter (
+                      Mandatory=$false
+                    , position=1
+                    , HelpMessage="Folder"
+                   )
+          ]
+ 
+          [string] $ext     
+ 
+ 
       )
-       
+      
 Set-StrictMode -Version Latest;
 
-[string] $folderActual = "";
-[string] $folderActualLastCharacter = "";
-[string] $folder_and_backslash = "";
-[string] $extWildcard = "";
-[int]    $len = -1;
+
 [string] $os_file_separator_default = "`\";
 [string] $os_file_separator = "";
+[string] $stringEmpty = "";
 
-<#
-    Get OS Specific file separator
-        Use [IO.Path]::DirectorySeparatorChar
-#>
-try 
+[string] $FORMAT_OS_FOLDER_DOES_NOT_EXIST = "Folder ({0}) does not exist!" ;
+
+Function folderList([string] $folder, [string] $ext )
 {
+
+    [string]   $folderActualLastCharacter = "";
     
-    $os_file_separator = [IO.Path]::DirectorySeparatorChar;
+    [string]  $folder_and_backslash = "";
     
-}
-catch [Exception] 
-{
- 
-    $os_file_separator = $os_file_separator_default;
+    [string]  $extWildcard = "";
     
-}
-
-<#
-    Convert relative path to absolute path
-#>
-$folderActual  = Resolve-Path -Path $folder;
-
-<#
-    Get Length of folder
-#>
-$len = $folderActual.Length;
-
-<#
-    Get Last Character
-#>
-$folderActualLastCharacter = $folderActual.Substring($len -1, 1);
- 
-<#
-    Add backslash to folder if not the last character
-#>
-if ($folderActualLastCharacter -eq $os_file_separator )
-{
-    $folder_and_backslash = "$folderActual"
-}
-else
-{
-    $folder_and_backslash = "$folderActual$os_file_separator"
-}
-
-<#
-    Get File Extension as wildcard
-#>
-$extWildcard = "*.$ext"
-
-<#
-    Get Files
+    [int]     $len = -1;
     
-        a) Path is $folder
+    [int]     $lenAdjustedZeroBased = -1;
+    
+    [string]  $folderActual = "";
+    
+    [boolean] $folderExist = $false;
+    
+    <#
+        Get OS Specific file separator
+            Use [IO.Path]::DirectorySeparatorChar
+    #>
+    try 
+    {
         
-        b) File Extension has $ext
+        $os_file_separator = [IO.Path]::DirectorySeparatorChar;
         
-       c) File Attributes is not folder
+    }
+    catch [Exception] 
+    {
+     
+        $os_file_separator = $os_file_separator_default;
         
-       d) Recurse subdirectory
-
-
-   Result
+    }
+    
+    
+    <#
+        Convert Actual Path To String
+    #>
+    $folderExist = Test-Path $folder;
+    
+    if ($folderExist -eq $False)
+    {
+        
+        $log = $FORMAT_OS_FOLDER_DOES_NOT_EXIST -f $folder;
+        
+        Write-Error $log;
+        
+        return;
+    
+    }
    
-      a) Strip base folder
+    <#
+        Convert Actual Path To String
+    #>
+    $folderActual = Convert-Path $folder
+    
+
+    <#
+        Get Length of folder
+    #>
+    $len = $folderActual.Length;
+
+    <#
+        Get Length of folder, 0 based
+    #>
+    $lenAdjustedZeroBased = $len -1;
+
+    <#
+        Get Last Character
         
-#>
+    #>
+    $folderActualLastCharacter = $folderActual.Substring($lenAdjustedZeroBased , 1);
+     
+    <#
+        Add backslash to folder if not the last character
+    #>
+    if ($folderActualLastCharacter -eq $os_file_separator )
+    {
+        $folder_and_backslash = "$folderActual"
+    }
+    else
+    {
+        $folder_and_backslash = "$folderActual$os_file_separator"
+    }
 
-Write-Host "";
+    <#
+        Get File Extension as wildcard
+    #>
+    $extWildcard = "*.$ext"
 
-Get-ChildItem -Path $folder  $extWildcard -Attributes !Directory -Recurse | 
+    <#
+        Get Files
+        
+            a) Path is $folder
+            
+            b) File Extension has $ext
+            
+           c) File Attributes is not folder
+            
+           d) Recurse subdirectory
 
-        % { ($_.FullName.Replace($folder_and_backslash, '') )}
+
+       Result
+       
+          a) Strip base folder using string replace method
+            
+    #>
+
+    Write-Output "";
+
+    Get-ChildItem -Path $folder  $extWildcard -Attributes !Directory -Recurse | 
+
+            ForEach-Object { ($_.FullName.Replace($folder_and_backslash, $stringEmpty) )}
+            
+            
+            
+}
+
+folderList $folder $ext
