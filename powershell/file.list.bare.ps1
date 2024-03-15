@@ -24,7 +24,7 @@ Param (
         , [parameter (
                       Mandatory=$false
                     , position=1
-                    , HelpMessage="Folder"
+                    , HelpMessage="Extension"
                    )
           ]
  
