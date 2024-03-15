@@ -42,6 +42,8 @@ Set-StrictMode -Version Latest;
 
 [string] $FORMAT_OS_FOLDER_DOES_NOT_EXIST = "Folder ({0}) does not exist!" ;
 
+[string] $FORMAT_EXTENSION_WILDCARD = "*.{0}";
+
 Function folderList([string] $folder, [string] $ext )
 {
 
@@ -78,10 +80,14 @@ Function folderList([string] $folder, [string] $ext )
     
     
     <#
-        Convert Actual Path To String
+        Check if folder exists
     #>
     $folderExist = Test-Path $folder;
     
+    
+    <#
+        If folder does not exist, raise error
+    #>    
     if ($folderExist -eq $False)
     {
         
@@ -130,7 +136,7 @@ Function folderList([string] $folder, [string] $ext )
     <#
         Get File Extension as wildcard
     #>
-    $extWildcard = "*.$ext"
+    $extWildcard = $FORMAT_EXTENSION_WILDCARD -f $ext
 
     <#
         Get Files
